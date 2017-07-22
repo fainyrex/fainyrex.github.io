@@ -1,0 +1,28 @@
+machine:
+  node:
+    version: 6.2.1
+dependencies:
+  cache_directories:
+    - node_modules
+  override:
+    - npm install
+    - npm install --global gulp
+    - npm install --save-dev gulp
+
+test:
+  override:
+    - rm -rf out
+    - mkdir out
+    - git clone https://github.com/SAPIC/SAPIC.github.io ./:
+        pwd: out
+    - CIRCLE_BUILD_NUM=${CIRCLE_BUILD_NUM} gulp
+    - git config --global user.name "${GH_NAME}"
+    - git config --global user.email "${GH_MAIL}"
+    - git add --a:
+        pwd: out
+    - git commit -m 'AutoPush':
+        pwd: out
+    - git push --force --quiet "https://${GH_ATOKEN}@github.com/SAPIC/SAPIC.github.io"> /dev/null 2>&1:
+        pwd: out
+    - scp -r ./* circleci@23.236.54.42:~/www:
+        pwd: out
